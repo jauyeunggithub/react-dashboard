@@ -8,4 +8,7 @@ export default {
   transformIgnorePatterns: [
     "/node_modules/(?!@testing-library|react|react-dom|some-other-esm-package)/",
   ],
+  moduleNameMapper: {
+    "\\.(css|less|sass|scss)$": "identity-obj-proxy",
+  },
 };

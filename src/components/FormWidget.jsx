@@ -17,13 +17,19 @@ const FormWidget = () => {
       <div className="widget-title">Form Widget</div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <label>Name</label>
-          <input {...register("name", { required: "Name is required" })} />
+          <label htmlFor="name">Name</label>
+          <input
+            id="name"
+            {...register("name", { required: "Name is required" })}
+          />
           {errors.name && <span>{errors.name.message}</span>}
         </div>
         <div>
-          <label>Email</label>
-          <input {...register("email", { required: "Email is required" })} />
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            {...register("email", { required: "Email is required" })}
+          />
           {errors.email && <span>{errors.email.message}</span>}
         </div>
         <button type="submit">Submit</button>

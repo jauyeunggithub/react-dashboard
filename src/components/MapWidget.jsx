@@ -1,3 +1,4 @@
+// src/components/MapWidget.jsx
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
@@ -10,10 +11,19 @@ const MapWidget = () => {
 
   useEffect(() => {
     fetch(`https://ipinfo.io/json?token=${token}`)
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         const [lat, lng] = data.loc.split(",");
         setLocation([parseFloat(lat), parseFloat(lng)]);
+      })
+      .catch((error) => {
+        console.error("Error fetching location data:", error);
+        setLocation(null);
       });
   }, []);
 

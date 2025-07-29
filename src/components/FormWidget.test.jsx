@@ -10,8 +10,8 @@ describe("FormWidget", () => {
 
     render(<FormWidget />);
 
-    const nameInput = screen.getByLabelText("Name");
-    const emailInput = screen.getByLabelText("Email");
+    const nameInput = screen.getByLabelText("Name"); // This will now work
+    const emailInput = screen.getByLabelText("Email"); // This will now work
     const submitButton = screen.getByRole("button", { name: "Submit" });
 
     await userEvent.type(nameInput, "John Doe");

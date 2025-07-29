@@ -8,7 +8,7 @@ jest.mock("react-leaflet", () => ({
   MapContainer: ({ children }) => <div>{children}</div>,
   TileLayer: () => <div>Tile Layer</div>,
   Marker: ({ children }) => <div>{children}</div>,
-  Popup: () => <div>Popup</div>,
+  Popup: ({ children }) => <div>{children}</div>,
 }));
 
 jest.mock("leaflet", () => ({
@@ -82,21 +82,28 @@ describe("MapWidget", () => {
   });
 
   it("handles fetch errors gracefully", async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
     fetchMock.mockRejectOnce(new Error("Network error during fetch"));
 
     render(<MapWidget />);
 
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(screen.queryByText(/Tile Layer/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Popup/)).not.toBeInTheDocument();
+
     expect(screen.getByText("Loading map...")).toBeInTheDocument();
 
-    await waitFor(
-      () => {
-        expect(screen.queryByText(/Tile Layer/)).not.toBeInTheDocument();
-        expect(screen.queryByText(/Popup/)).not.toBeInTheDocument();
-      },
-      { timeout: 100 }
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Error fetching location data:",
+      expect.any(Error)
     );
-
-    expect(screen.getByText("Loading map...")).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    consoleErrorSpy.mockRestore();
   });
 });
