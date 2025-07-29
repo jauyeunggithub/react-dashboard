@@ -4,16 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import TableWidget from "./TableWidget";
 import fetchMock from "jest-fetch-mock";
 
-// No need to mock React's useEffect if you're correctly handling async operations
-// with waitFor and fetchMocks, as React Testing Library handles flushing updates.
-// If you're mocking useEffect, it might interfere with the component's actual behavior.
-// jest.mock("react", () => ({
-//   ...jest.requireActual("react"),
-//   useEffect: jest.fn(),
-// }));
-
 describe("TableWidget", () => {
-  // Ensure fetch mocks are reset before each test
   beforeEach(() => {
     fetchMock.resetMocks();
   });
@@ -65,13 +56,17 @@ describe("TableWidget", () => {
 
     await waitFor(() => {
       expect(screen.queryByText(/ID/)).toBeInTheDocument();
-      expect(screen.queryByText(/Leanne Graham/)).not.toBeInTheDocument(); // No user data
+      expect(screen.queryByText(/Leanne Graham/)).not.toBeInTheDocument();
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("handles fetch errors gracefully", async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
     fetchMock.mockRejectOnce(new Error("Network error!"));
 
     render(<TableWidget />);
@@ -81,9 +76,17 @@ describe("TableWidget", () => {
       expect(screen.queryByText(/ID/)).toBeInTheDocument();
     });
 
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Error fetching table data:",
+      expect.any(Error)
+    );
+
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
       "https://jsonplaceholder.typicode.com/users"
     );
+
+    consoleErrorSpy.mockRestore();
   });
 });

@@ -5,11 +5,19 @@ const TableWidget = () => {
   const [tableData, setTableData] = useState([]);
 
   useEffect(() => {
-    // Fetch data from a free API
     fetch("https://jsonplaceholder.typicode.com/users")
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         setTableData(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching table data:", error);
+        setTableData([]);
       });
   }, []);
 
