@@ -2,7 +2,6 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import ChartsWidget from "./ChartsWidget";
-
 import fetchMock from "jest-fetch-mock";
 
 jest.mock("react-chartjs-2", () => ({
@@ -37,11 +36,9 @@ describe("ChartsWidget", () => {
 
     render(<ChartsWidget />);
 
-    // Initially, the chart should not be in the document
     expect(screen.queryByTestId("line-chart")).not.toBeInTheDocument();
-    expect(screen.getByText("Chart Widget")).toBeInTheDocument(); // Widget title should be there
+    expect(screen.getByText("Chart Widget")).toBeInTheDocument();
 
-    // Wait for the chart to be rendered after data is fetched
     await waitFor(() => {
       expect(screen.getByTestId("line-chart")).toBeInTheDocument();
     });
@@ -54,49 +51,49 @@ describe("ChartsWidget", () => {
       { id: 30, userId: 300, title: "Test Post C" },
       { id: 40, userId: 400, title: "Test Post D" },
       { id: 50, userId: 500, title: "Test Post E" },
-      { id: 60, userId: 600, title: "Test Post F" }, // More data than needed to test slice(0, 5)
+      { id: 60, userId: 600, title: "Test Post F" },
     ];
 
-    // Mock the specific API response for this test case
     fetchMock.mockResponseOnce(JSON.stringify(mockApiData));
 
     render(<ChartsWidget />);
 
-    // Wait for the asynchronous fetch operation to complete and for the UI to update
     await waitFor(() => {
-      // Verify that fetch was called with the correct URL
       expect(fetchMock).toHaveBeenCalledTimes(1);
       expect(fetchMock).toHaveBeenCalledWith(
         "https://jsonplaceholder.typicode.com/posts"
       );
 
-      // Verify that the chart's labels and data reflect the mocked API response,
-      // specifically testing the slice(0, 5) and mapping id to labels, userId to data.
       expect(screen.getByTestId("chart-labels")).toHaveTextContent(
-        "10,20,30,40,50" // IDs of the first 5 posts
+        "10,20,30,40,50"
       );
       expect(screen.getByTestId("chart-data")).toHaveTextContent(
-        "100,200,300,400,500" // User IDs of the first 5 posts
+        "100,200,300,400,500"
       );
     });
   });
 
   it("handles API errors gracefully by not rendering the chart", async () => {
-    // Mock an API error response
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
     fetchMock.mockRejectOnce(new Error("Failed to fetch data"));
 
     render(<ChartsWidget />);
 
-    // The component does not display an error message or a loading indicator.
-    // It simply won't render the chart if `chartData` remains null.
-    // We wait for the fetch to complete its cycle (and fail).
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
-    // Assert that the chart component is NOT rendered
     expect(screen.queryByTestId("line-chart")).not.toBeInTheDocument();
-    // Assert that no error message is displayed (since the component doesn't have one)
     expect(screen.queryByText(/Error/i)).not.toBeInTheDocument();
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Error fetching chart data:",
+      expect.any(Error)
+    );
+
+    consoleErrorSpy.mockRestore();
   });
 });

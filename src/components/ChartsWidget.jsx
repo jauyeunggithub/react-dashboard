@@ -26,7 +26,13 @@ const ChartsWidget = () => {
 
   useEffect(() => {
     fetch("https://jsonplaceholder.typicode.com/posts")
-      .then((response) => response.json())
+      .then((response) => {
+        // You can add checks for response.ok here if you want to handle HTTP errors (e.g., 404, 500)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         const labels = data.slice(0, 5).map((post) => post.id);
         const values = data.slice(0, 5).map((post) => post.userId);
@@ -42,6 +48,10 @@ const ChartsWidget = () => {
             },
           ],
         });
+      })
+      .catch((error) => {
+        console.error("Error fetching chart data:", error);
+        setChartData(null);
       });
   }, []);
 
