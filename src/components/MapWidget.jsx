@@ -3,11 +3,13 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+const token = import.meta.env.VITE_IPINFO_TOKEN;
+
 const MapWidget = () => {
   const [location, setLocation] = useState(null);
 
   useEffect(() => {
-    fetch("https://ipinfo.io/json?token=YOUR_API_TOKEN")
+    fetch(`https://ipinfo.io/json?token=${token}`)
       .then((response) => response.json())
       .then((data) => {
         const [lat, lng] = data.loc.split(",");
