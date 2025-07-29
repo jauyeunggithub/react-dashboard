@@ -1,41 +1,67 @@
 /* eslint-disable no-undef */
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import FormWidget from "./FormWidget";
 
 describe("FormWidget", () => {
-  it("renders the form and handles submit", async () => {
+  it("handles form submission and logs data", async () => {
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
     render(<FormWidget />);
 
-    // Check if the form fields are rendered
-    const nameInput = screen.getByLabelText(/name/i);
-    const emailInput = screen.getByLabelText(/email/i);
-    const submitButton = screen.getByRole("button", { name: /submit/i });
+    const nameInput = screen.getByLabelText("Name");
+    const emailInput = screen.getByLabelText("Email");
+    const submitButton = screen.getByRole("button", { name: "Submit" });
 
-    // Simulate user typing in the form
-    fireEvent.change(nameInput, { target: { value: "John Doe" } });
-    fireEvent.change(emailInput, { target: { value: "johndoe@example.com" } });
+    await userEvent.type(nameInput, "John Doe");
+    await userEvent.type(emailInput, "john.doe@example.com");
 
-    // Simulate form submission
-    fireEvent.click(submitButton);
+    await userEvent.click(submitButton);
 
-    // Wait for the submit handler to complete (if necessary)
-    await waitFor(() => {
-      expect(nameInput).toHaveValue("John Doe");
-      expect(emailInput).toHaveValue("johndoe@example.com");
+    expect(consoleSpy).toHaveBeenCalledTimes(1);
+    expect(consoleSpy).toHaveBeenCalledWith({
+      name: "John Doe",
+      email: "john.doe@example.com",
     });
+
+    consoleSpy.mockRestore();
   });
 
-  it("displays validation errors when fields are empty", async () => {
+  it("displays validation errors for required fields", async () => {
     render(<FormWidget />);
 
-    const submitButton = screen.getByRole("button", { name: /submit/i });
+    const submitButton = screen.getByRole("button", { name: "Submit" });
 
-    // Click submit without filling in the form
-    fireEvent.click(submitButton);
+    await userEvent.click(submitButton);
 
-    // Check that error messages are shown
-    expect(screen.getByText(/name is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Name is required")).toBeInTheDocument();
+      expect(screen.getByText("Email is required")).toBeInTheDocument();
+    });
+
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+    await userEvent.click(submitButton);
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it("clears validation error for a field when it's filled", async () => {
+    render(<FormWidget />);
+    const nameInput = screen.getByLabelText("Name");
+    const submitButton = screen.getByRole("button", { name: "Submit" });
+
+    await userEvent.click(submitButton);
+    await waitFor(() => {
+      expect(screen.getByText("Name is required")).toBeInTheDocument();
+    });
+
+    await userEvent.type(nameInput, "Jane Doe");
+
+    await waitFor(() => {
+      expect(screen.queryByText("Name is required")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Email is required")).toBeInTheDocument();
   });
 });
