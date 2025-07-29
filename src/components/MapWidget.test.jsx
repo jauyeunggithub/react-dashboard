@@ -2,9 +2,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import MapWidget from "./MapWidget";
-import "@testing-library/jest-dom/extend-expect";
 
-// Mock react-leaflet components
 jest.mock("react-leaflet", () => ({
   MapContainer: ({ children }) => <div>{children}</div>,
   TileLayer: () => <div>Tile Layer</div>,
@@ -13,10 +11,30 @@ jest.mock("react-leaflet", () => ({
 }));
 
 describe("MapWidget", () => {
+  let originalImportMetaEnv;
+
+  beforeAll(() => {
+    originalImportMetaEnv = global.import?.meta?.env;
+
+    if (!global.import) {
+      global.import = {};
+    }
+    if (!global.import.meta) {
+      global.import.meta = {};
+    }
+
+    global.import.meta.env = {
+      VITE_IPINFO_TOKEN: "mock-ipinfo-token-for-tests",
+    };
+  });
+
+  afterAll(() => {
+    global.import.meta.env = originalImportMetaEnv;
+  });
+
   it("renders map with marker", async () => {
     render(<MapWidget />);
 
-    // Ensure map-related elements are rendered
     expect(screen.getByText(/Tile Layer/)).toBeInTheDocument();
     expect(screen.getByText(/Popup/)).toBeInTheDocument();
   });

@@ -2,7 +2,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import FormWidget from "./FormWidget";
-import "@testing-library/jest-dom/extend-expect";
 
 describe("FormWidget", () => {
   it("renders the form and handles submit", async () => {

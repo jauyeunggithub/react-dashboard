@@ -25,11 +25,9 @@ const ChartsWidget = () => {
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-    // Fetch data from a free API
     fetch("https://jsonplaceholder.typicode.com/posts")
       .then((response) => response.json())
       .then((data) => {
-        // Simulate some chart data from API response
         const labels = data.slice(0, 5).map((post) => post.id);
         const values = data.slice(0, 5).map((post) => post.userId);
 
