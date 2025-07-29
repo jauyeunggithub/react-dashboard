@@ -27,7 +27,6 @@ const ChartsWidget = () => {
   useEffect(() => {
     fetch("https://jsonplaceholder.typicode.com/posts")
       .then((response) => {
-        // You can add checks for response.ok here if you want to handle HTTP errors (e.g., 404, 500)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

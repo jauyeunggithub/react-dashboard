@@ -3,9 +3,6 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import fetchMock from "jest-fetch-mock";
 
-// --- GLOBAL MOCKS FOR REACT-LEAFLET AND LEAFLET START ---
-// These mocks must be defined BEFORE the MapWidget mock,
-// as the MapWidget mock will refer to these.
 jest.mock("react-leaflet", () => ({
   MapContainer: ({ children }) => <div>{children}</div>,
   TileLayer: () => <div>Tile Layer</div>,
@@ -26,17 +23,12 @@ jest.mock("leaflet", () => ({
     },
   },
 }));
-// --- GLOBAL MOCKS FOR REACT-LEAFLET AND LEAFLET END ---
 
-// --- FIX START ---
-// Mock the entire MapWidget module. This mock will now use the *globally mocked*
-// react-leaflet components, avoiding the `jest.requireActual("react-leaflet")` error.
 jest.mock("./MapWidget", () => {
-  const actualReact = jest.requireActual("react"); // Still need actual React
+  const actualReact = jest.requireActual("react");
 
   const MOCKED_VITE_IPINFO_TOKEN = "mock-ipinfo-token-for-tests";
 
-  // Use jest.requireMock to get the already defined mocks for react-leaflet components
   const { MapContainer, TileLayer, Marker, Popup } =
     jest.requireMock("react-leaflet");
 
@@ -65,7 +57,7 @@ jest.mock("./MapWidget", () => {
       <div className="widget">
         <div className="widget-title">Map Widget</div>
         {location ? (
-          <MapContainer // Now using the globally mocked MapContainer directly
+          <MapContainer
             center={location}
             zoom={13}
             style={{ height: "400px", width: "100%" }}
@@ -83,9 +75,7 @@ jest.mock("./MapWidget", () => {
   };
   return MockMapWidget;
 });
-// --- FIX END ---
 
-// Import the mocked MapWidget component. Jest will now use the mocked version.
 import MapWidget from "./MapWidget";
 
 describe("MapWidget", () => {
