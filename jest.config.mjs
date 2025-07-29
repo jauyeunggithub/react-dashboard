@@ -6,7 +6,7 @@ export default {
     "^.+\\.(js|jsx)$": "babel-jest",
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!@testing-library|react|react-dom|some-other-esm-package)/",
+    "/node_modules/(?!(?:@testing-library|react|react-dom|react-leaflet)/)",
   ],
   moduleNameMapper: {
     "\\.(css|less|sass|scss)$": "identity-obj-proxy",
