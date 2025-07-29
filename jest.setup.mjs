@@ -1,25 +1,22 @@
-(async () => {
-  try {
-    const fetchMockModule = await import("jest-fetch-mock");
+// jest.setup.mjs
 
-    const fetchMock = fetchMockModule.default || fetchMockModule;
-    if (typeof fetchMock.enableMocks === "function") {
-      fetchMock.enableMocks();
-    } else {
-      console.warn(
-        "jest-fetch-mock.enableMocks() not found. Ensure it's correctly imported."
-      );
-    }
+// Import the CommonJS wrapper. Node.js can import .cjs files from .mjs files.
+// This import is synchronous because it's importing a CJS module.
+import fetchMock from "./jest-fetch-mock-bridge.cjs";
 
-    if (
-      typeof global.beforeEach === "function" &&
-      typeof fetchMock.resetMocks === "function"
-    ) {
-      global.beforeEach(() => {
-        fetchMock.resetMocks();
-      });
-    }
-  } catch (error) {
-    console.error("Error loading jest-fetch-mock in jest.setup.mjs:", error);
-  }
-})();
+// Now, define your beforeEach hook synchronously,
+// as fetchMock is available immediately.
+if (
+  typeof global.beforeEach === "function" &&
+  typeof fetchMock.resetMocks === "function"
+) {
+  global.beforeEach(() => {
+    fetchMock.resetMocks();
+  });
+} else {
+  console.warn(
+    "global.beforeEach or fetchMock.resetMocks not available, beforeEach hook not set."
+  );
+}
+
+// No more async IIFE needed for fetchMock setup within this file!
